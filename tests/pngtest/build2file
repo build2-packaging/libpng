@@ -1,3 +1,0 @@
-import libs += libpng%lib{png} libz%lib{z}
-
-exe{pngtest}: {h c}{*} $libs testscript

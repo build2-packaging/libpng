@@ -1,5 +1,0 @@
-import libs += libpng%lib{png} libz%lib{z}
-
-exe{pngunknown}: {h c}{*} $libs testscript {file}{pngtest.png}
-
-obj{*}: c.poptions =+ -DPNG_FREESTANDING_TESTS
