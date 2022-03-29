@@ -1,0 +1,7 @@
+project = libpng
+
+using version
+using config
+using test
+using install
+using dist

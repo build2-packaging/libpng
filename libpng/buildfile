@@ -1,0 +1,43 @@
+intf_libs = # Interface dependencies.
+impl_libs = # Implementation dependencies.
+#import xxxx_libs += libhello%lib{hello}
+
+lib{png}: {h c}{**} $impl_libs $intf_libs
+
+h{export}@./: c.importable = false
+
+# Build options.
+#
+c.poptions =+ "-I$out_root" "-I$src_root"
+
+{hbmia obja}{*}: c.poptions += -DLIBPNG_STATIC_BUILD
+{hbmis objs}{*}: c.poptions += -DLIBPNG_SHARED_BUILD
+
+# Export options.
+#
+lib{png}:
+{
+  c.export.poptions = "-I$out_root" "-I$src_root"
+  c.export.libs = $intf_libs
+}
+
+liba{png}: c.export.poptions += -DLIBPNG_STATIC
+libs{png}: c.export.poptions += -DLIBPNG_SHARED
+
+# For pre-releases use the complete version to make sure they cannot be used
+# in place of another pre-release or the final version. See the version module
+# for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{png}: bin.lib.version = "-$version.project_id"
+else
+  lib{png}: bin.lib.version = "-$version.major.$version.minor"
+
+# Install into the libpng/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+h{*}:
+{
+  install         = include/libpng/
+  install.subdirs = true
+}
