@@ -1,28 +1,77 @@
-intf_libs = # Interface dependencies.
-impl_libs = # Implementation dependencies.
-#import xxxx_libs += libhello%lib{hello}
+import impl_libs = libz%lib{z}
 
-lib{png}: {h c}{**} $impl_libs $intf_libs
+tcpu = $c.target.cpu
 
-h{export}@./: c.importable = false
+arm     = ($tcpu == 'arm' || $tcpu == 'aarch64')
+intel   = ($tcpu == 'i686'|| $tcpu == 'x86_64')
+mips    = ($regex.match($tcpu, 'mipsel.*')   || $regex.match($tcpu, 'mips64el.*'))
+powerpc = ($regex.match($tcpu, '^powerpc.*') || $regex.match($tcpu, '^ppc64.*'))
+
+windows = ($c.target.class == 'windows')
+linux   = ($c.target.class == 'linux')
+bsd     = ($c.target.class == 'bsd')
+
+# Version script.
+#
+define vsc: file
+vsc{*}: extension = vers
+
+lib{png}: {h c}{*} $impl_libs
+
+# Note that ARM support requires compilation of an ASM source file which we do
+# not yet support.
+#
+lib{png}: arm/c{*}:     include = false # $arm
+lib{png}: intel/c{*}:   include = $intel
+lib{png}: mips/c{*}:    include = $mips
+lib{png}: powerpc/c{*}: include = $powerpc
+lib{png}: vsc{libpng}:  include = ($linux || $bsd ? adhoc : false)
 
 # Build options.
 #
-c.poptions =+ "-I$out_root" "-I$src_root"
+c.poptions =+ "-I$src_base"
 
-{hbmia obja}{*}: c.poptions += -DLIBPNG_STATIC_BUILD
-{hbmis objs}{*}: c.poptions += -DLIBPNG_SHARED_BUILD
+# Enable hardware optimizations.
+#
+# Note that the hardware-specific source files only enable optimized code if
+# the corresponding optimization is enabled in the compiler (whether
+# explicitly via compiler options or implicitly as is often the case for
+# SSE2).
+#
+# Note also that, although the upstream INSTALL file says to use the macros
+# without the _OPT suffix, the upstream code does not appear to support that
+# for any architectures but Intel (see pngpriv.h and png.h). So here we
+# emulate the upstream `configure` and CMakeLists.txt as closely as we can: if
+# we're on the corresponding architecture, define the macro to `on` as if the
+# user enabled hardware optimizations; otherwise do not define it at all, as
+# if the user did not pass any hardware optimization options.
+#
+if $arm
+  c.poptions += -DPNG_ARM_NEON_OPT=2
+elif $intel
+  c.poptions += -DPNG_INTEL_SSE_OPT=1
+elif $mips
+  c.poptions += -DPNG_MIPS_MSA_OPT=2
+elif $powerpc
+  c.poptions += -DPNG_POWERPC_VSX_OPT=2
+
+if $windows
+{
+  c.poptions += -D_CRT_SECURE_NO_DEPRECATE
+  objs{*}: c.poptions += -DPNG_BUILD_DLL
+}
+elif ($linux || $bsd)
+{
+  c.loptions += "-Wl,--version-script=$src_base/libpng.vers"
+  c.libs += -lm
+}
 
 # Export options.
 #
-lib{png}:
-{
-  c.export.poptions = "-I$out_root" "-I$src_root"
-  c.export.libs = $intf_libs
-}
+lib{png}: c.export.poptions = "-I$src_base"
 
-liba{png}: c.export.poptions += -DLIBPNG_STATIC
-libs{png}: c.export.poptions += -DLIBPNG_SHARED
+if $windows
+  libs{png}: c.export.poptions += -DPNG_USE_DLL
 
 # For pre-releases use the complete version to make sure they cannot be used
 # in place of another pre-release or the final version. See the version module
@@ -33,11 +82,13 @@ if $version.pre_release
 else
   lib{png}: bin.lib.version = "-$version.major.$version.minor"
 
-# Install into the libpng/ subdirectory of, say, /usr/include/
-# recreating subdirectories.
+# Install directly into, say, /usr/include/.
 #
-h{*}:
-{
-  install         = include/libpng/
-  install.subdirs = true
-}
+# Note that upstream goes through some extra motions and installs the headers
+# both into include/ and include/libpngXY/. We are not going to do that for
+# now since the library name doesn't include the version (and so in our model
+# it's impossible to install multiple versions into the same location) and all
+# the installed header names are prefixed with the library name.
+#
+h{*}: install = false
+h{png}@./ h{pngconf}@./ h{pnglibconf}@./: install = include/
