@@ -1,11 +1,22 @@
 : 1
 name: libpng
-version: 0.1.0-a.0.z
-summary: png C library
-license: other: proprietary ; Not free/open source.
-url: https://example.org/libpng
-email: francois@codesynthesis.com
-#build-error-email: francois@codesynthesis.com
+
+# Note that although the upstream versioning scheme resembles semver they make
+# binary-incompatible changes inbetween patch releases.
+#
+version: 1.6.37-a.0.z
+
+summary: The official PNG reference C library
+license: libpng-2.0 ; PNG reference library version 2
+description-file: README
+changes-file: CHANGES
+url: http://libpng.org/pub/png/libpng.html
+doc-url: http://libpng.org/pub/png/libpng-manual.txt
+src-url: https://sourceforge.net/projects/libpng
+package-url: https://github.com/build2-packaging/libpng
+package-email: packaging@build2.org ; Mailing list.
+email: png-mng-implement@lists.sourceforge.net ; Mailing list.
+build-error-email: builds@build2.org
 depends: * build2 >= 0.14.0
 depends: * bpkg >= 0.14.0
-#depends: libhello ^1.0.0
+depends: libz ^1.2.1100
