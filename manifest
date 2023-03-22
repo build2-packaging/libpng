@@ -4,7 +4,7 @@ name: libpng
 # Note that although the upstream versioning scheme resembles semver they make
 # binary-incompatible changes inbetween patch releases.
 #
-version: 1.6.37
+version: 1.6.37+1
 
 summary: The official PNG reference C library
 license: libpng-2.0 ; PNG reference library version 2

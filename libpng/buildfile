@@ -46,8 +46,11 @@ c.poptions =+ "-I$src_base"
 # user enabled hardware optimizations; otherwise do not define it at all, as
 # if the user did not pass any hardware optimization options.
 #
+# It's not clear why they use `1` in some cases and `2` in others when both
+# mean "on" (all checks in source code are of the form `PNG_*_OPT > 0`).
+#
 if $arm
-  c.poptions += -DPNG_ARM_NEON_OPT=2
+  c.poptions += -DPNG_ARM_NEON_OPT=0 # Disable NEON (see above).
 elif $intel
   c.poptions += -DPNG_INTEL_SSE_OPT=1
 elif $mips
