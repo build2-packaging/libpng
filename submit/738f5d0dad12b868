@@ -1,0 +1,5 @@
+: 1
+name: libpng
+version: 1.6.37+1
+summary: The official PNG reference C library
+license: libpng-2.0; PNG reference library version 2
