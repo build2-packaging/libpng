@@ -1,6 +1,13 @@
 # Test executables.
 #
 driver
+pngtest
+pnggetset
+pngvalid
+
+# pngtest's round-trip write-out artifact.
+#
+pngout.png
 
 # Testscript output directories (can be symlinks).
 #

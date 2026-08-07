@@ -1,0 +1,34 @@
+import libs      = libpng%lib{png}
+import zlib_libs = libz%lib{z}
+
+linux = ($c.target.class == 'linux')
+bsd   = ($c.target.class == 'bsd')
+
+./: exe{pngtest pnggetset pngvalid}
+
+exe{pngtest}:   c{pngtest}   $libs $zlib_libs testscript
+exe{pnggetset}: c{pnggetset} $libs testscript
+exe{pngvalid}:  c{pngvalid} h{cexcept} $libs $zlib_libs testscript
+{
+  test = false # slow
+}
+
+# pnggetset.c/pngvalid.c fall back to a "../../png.h"-relative include unless
+# told to use the portable <png.h> form (they normally live two directories
+# deeper, under contrib/libtests/).
+#
+exe{pnggetset}: c.poptions += -DPNG_FREESTANDING_TESTS
+exe{pngvalid}:  c.poptions += -DPNG_FREESTANDING_TESTS "-I$src_base"
+
+# pngvalid.c calls floor()/pow()/ceil() directly; on Linux/BSD that needs an
+# explicit -lm on its own link line (libpng.so linking -lm privately doesn't
+# satisfy a separate executable's undefined libm symbols).
+#
+if ($linux || $bsd)
+  exe{pngvalid}: c.libs += -lm
+
+# pngtest.png: ./: for dist, testscript@./: for update-for-test.
+#
+./: file{pngtest.png}
+testscript@./: file{pngtest.png}
+exe{pngtest}: test.arguments = $src_base/pngtest.png $out_base/pngout.png
