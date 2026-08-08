@@ -17,3 +17,10 @@
 # Use `binary` to make sure certain files are never auto-detected as text.
 #
 #*.png binary
+
+# Directory symlinks overlaying the upstream submodule.
+#
+libpng/arm symlink=dir
+libpng/intel symlink=dir
+libpng/mips symlink=dir
+libpng/powerpc symlink=dir
