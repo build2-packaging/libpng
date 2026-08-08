@@ -27,8 +27,5 @@ exe{pngvalid}:  c.poptions += -DPNG_FREESTANDING_TESTS "-I$src_base"
 if ($linux || $bsd)
   exe{pngvalid}: c.libs += -lm
 
-# pngtest.png: ./: for dist, testscript@./: for update-for-test.
-#
 ./: file{pngtest.png}
-testscript@./: file{pngtest.png}
 exe{pngtest}: test.arguments = $src_base/pngtest.png $out_base/pngout.png
